@@ -15,8 +15,9 @@
             <div class="col-md-2 border-end">
                 <div class="d-flex flex-column align-items-center text-center mb-5">
                     <img class="rounded-circle mt-sm-5" width="115px" src="/Uploads/profile.jpg">
-                    <span class="fw-bold alert alert-warning my-2 p-2">{{userinfo.fullname}}</span>
-                    <span class="text-black-50">{{user.gmail}}</span>
+                    <span class="fw-bold alert alert-warning my-2 p-2">{{userinfo.fullName}}</span>
+                    <span class="text-black-50 small fw-bold">{{user.email}}</span>
+                    <span class="text-black-50 small fw-bold" style="font-size: 11px;">Entry Date: {{userinfo.entryDate}}</span>
                     <span> </span>
                 </div>
             </div>
@@ -30,15 +31,15 @@
                     <hr class="m-0 mb-3"/>
                     <div class="row">
                         <div class="form-group ">
-                            <label class="form-label" for="fullname" required><b>Name:</b></label>
-                            <input class="form-control" type="text" name="fullname" maxlength="200" required="" id="fullname" value="{{userinfo.fullname}}">
+                            <label class="form-label" for="fullName" required><b>Name:</b></label>
+                            <input class="form-control" type="text" name="fullName" maxlength="200" required="" id="fullName" value="{{userinfo.fullName}}">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-6 py-2">
                             <div class="form-group">
-                                <label class="form-label" for="birthdate"><b>Date:</b></label>
-                                <input class="form-control" type="date" name="birthdate" required="" id="birthdate" value="{{date}}">
+                                <label class="form-label" for="birthdate"><b>Birthdate:</b></label>
+                                <input class="form-control" type="date" name="birthdate" required="" id="birthdate" value="{{birthdate}}">
                             </div>
                         </div>
                         <div class="col-sm-6 py-2">
@@ -48,9 +49,12 @@
                                     {% if userinfo.gender == 'M' %}
                                         <option value="M" selected>Male</option>
                                         <option value="F" >Female</option>
-                                    {% else %}
+                                    {% elif userinfo.gender == 'F' %}
                                         <option value="M" >Male</option>
                                         <option value="F" selected>Female</option>
+                                    {% else %}
+                                        <option value="M" >Male</option>
+                                        <option value="F" >Female</option>
                                     {% endif %}
                                 </select>
                             </div>
@@ -81,13 +85,13 @@
                         {% with sl=1 %}
                         {% for address in addresses %}
                             <div class="d-flex rounded bg-light mb-3 p-2 col-sm-11 border">
-                                <div class="col-sm-1 text-center d-flex border-end">
-                                    <span class="m-auto"><b>{{ forloop.counter }}.</b></span>
+                                <div class="col-sm-10 text-cener d-flex flex-column border-end ps-3">
+                                    <span class="p-1 border-bottom"><b>{{ forloop.counter }}. {{ address.addressName }}</b></span>
+                                    <div class="col-sm-12 py-1 ps-1 font-monospace" style="font-size: 14px;">
+                                        <span class="">{{address}}</span>
+                                    </div>
                                 </div>
-                                <div class="col-sm-9 px-1 font-monospace" style="font-size: 14px;">
-                                    <span class="">{{address}}</span>
-                                </div>
-                                <div class="col-sm-2 d-flex">
+                                <div class="col-sm-2 d-flex justify-content-center">
                                     <form action="{% url 'address_delete' address.id %}" method="post" class="d-flex" onsubmit="return confirm('Do you really want to delete the address?');">
                                     {% csrf_token %}
                                         <button type="submit" class="btn btn-danger btn-sm my-auto"><i class="bi bi-trash-fill"></i></button>
@@ -113,21 +117,25 @@
                                 <div class="modal-body">
                                     <div class="row justify-content-center align-items-center">
                                         <div class="form-group col-sm-6">
+                                            <label class="form-label" for="addressName"><b>Address Name:</b></label>
+                                            <input class="form-control" type="text" name="addressName" maxlength="200" required="" id="addressName">
+                                        </div>
+                                        <div class="form-group col-sm-6">
                                             <label class="form-label" for="country"><b>Country:</b></label>
                                             <input class="form-control" type="text" name="country" maxlength="200" required="" id="country">
                                         </div>
-                                        <div class="form-group col-sm-6">
+                                    </div>
+                                    <div class="row justify-content-center align-items-center py-2">
+                                        <div class="form-group col-sm-4">
                                             <label class="form-label" for="city"><b>City:</b></label>
                                             <input class="form-control" type="text" name="city" maxlength="200" required="" id="city">
                                         </div>
-                                    </div>
-                                    <div class="row justify-content-center align-items-center py-2">
-                                        <div class="form-group col-sm-6">
+                                        <div class="form-group col-sm-4">
                                             <label class="form-label" for="area"><b>Area:</b></label>
                                             <input class="form-control" type="text" name="area" maxlength="200" required="" id="area">
                                         </div>
-                                        <div class="form-group col-sm-6">
-                                            <label class="form-label" for="streetaddress"><b>Street Address:</b></label>
+                                        <div class="form-group col-sm-4">
+                                            <label class="form-label" for="streetaddress"><b>Street:</b></label>
                                             <input class="form-control" type="text" name="streetaddress" maxlength="200" required="" id="streetaddress">
                                         </div>
                                     </div>

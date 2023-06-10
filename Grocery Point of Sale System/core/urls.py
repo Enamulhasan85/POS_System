@@ -1,29 +1,57 @@
 from django.urls import path
-from core import views
+from core import views, setupviews, purchaseviews, stockviews
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
 from django.conf import settings
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/home')),
     path('home/', views.home, name='home'),
-    path('logout/', views.logout, name='logout'),
     path('about/', views.about, name='about'),
-    path('register/', views.registerpage, name='register'),
-    path('login/', views.loginpage, name='login'),
-    path('logout/', views.logoutUser, name='logout'),
-    path('home/add-to-cart/<slug:slug>', views.addcart, name='home_addtocart'),
-    path("products/<slug:slug>", views.product, name='product'),
-    path("product-category/<int:id>", views.productsearch, name='productsearch'),
-    path("products/add-to-cart/<slug:slug>", views.productaddcart, name='product_addtocart'),
-    path("products/createreview/<slug:slug>", views.createreview, name='CreateReview'),
-    path('cart/', views.cart, name='cart'),
-    path('shipping/', views.shipping, name='shipping'),
-    path('shipping/createaddress/', views.createaddress, name='shipping'),
+    
+    path('accounts/index/', views.userlist, name='userlist'),
+    # path('accounts/logout/', views.logout, name='logout'),
+    path('accounts/logout/', LogoutView.as_view(next_page='login'), name='logout'),
+    path('accounts/register/', views.registerpage, name='register'),
+    path('accounts/login/', views.loginpage, name='login'),
+    path('accounts/edit/<int:userid>', views.edituser, name='edituser'),
+    path('accounts/delete/', views.deleteuser, name='deleteuser'),
+    
+    path('company/index/', setupviews.companylist, name='companylist'),
+    path('company/create/', setupviews.createcompany, name='createcompany'),
+    path('company/edit/<int:id>', setupviews.editcompany, name='editcompany'),
+    path('company/delete/', setupviews.deletecompany, name='deletecompany'),
+    
+    path('customer/index/', setupviews.customerlist, name='customerlist'),
+    path('customer/create/', setupviews.createcustomer, name='createcustomer'),
+    path('customer/edit/<int:id>', setupviews.editcustomer, name='editcustomer'),
+    path('customer/delete/', setupviews.deletecustomer, name='deletecustomer'),
+    
+    path('category/index/', setupviews.categorylist, name='categorylist'),
+    path('category/create/', setupviews.createcategory, name='createcategory'),
+    path('category/edit/<int:id>', setupviews.editcategory, name='editcategory'),
+    path('category/delete/', setupviews.deletecategory, name='deletecategory'),
+    
+    path('product/index/', setupviews.productlist, name='productlist'),
+    path('product/create/', setupviews.createproduct, name='createproduct'),
+    path('product/edit/<int:id>', setupviews.editproduct, name='editproduct'),
+    path('product/delete/', setupviews.deleteproduct, name='deleteproduct'),
+    path('product/get/', setupviews.getproduct, name='getproduct'),
+    
+    path('purchase/index/', purchaseviews.purchaselist, name='purchaselist'),
+    path('purchase/create/', purchaseviews.createpurchase, name='createpurchase'),
+    path('purchase/edit/<int:id>', purchaseviews.editpurchase, name='editpurchase'),
+    path('purchase/delete/', purchaseviews.deletepurchase, name='deletepurchase'),
+    
+    path('stock/index/', stockviews.stocklist, name='stocklist'),
+    path('stock/edit/<int:id>', stockviews.editstock, name='editstock'),
+    
     path('profile/', views.profile, name='profile'),
     path('profile/createaddress/', views.createaddressprofile, name='createaddressprofile'),
     path('profile/deleteaddress/<int:id>', views.deleteaddressprofile, name='address_delete'),
-    path('order/', views.order, name='order'),
-    path('order/track/<slug:ref_code>', views.trackorder, name='trackorder'),
-    path('order/cancelorder/', views.cancelorder, name='cancelorder'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

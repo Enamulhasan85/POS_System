@@ -2,366 +2,202 @@ from sqlite3 import Timestamp
 from unicodedata import category, name
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.http import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import *
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.utils import timezone
 from .models import *
 from .forms import *
+from .decorators import *
 import datetime
 import random
 import string
 
 # Create your views here.
-def category_list():
-    categorylist = []
-    categorylist.append({
-        'menz': Category.objects.filter(gender='M')
-    })
-    categorylist.append({
-        'womens': Category.objects.filter(gender='F')
-    })
-    categorylist.append({
-        'kids': Category.objects.filter(gender='K')
-    })
-    categorylist.append({
-        'unisex': Category.objects.filter(gender='U')
-    })
-    
-    return categorylist
-
 
 def home(request):
-    categorylist = []
-    for category in Category.objects.all():
-        if Product.objects.filter(category=category).count() == 0:
-            continue
-        categorylist.append({
-            'category': category.name,
-            'products': Product.objects.filter(category=category)[:3]
-        })
+    # categorylist = []
+    # for category in Category.objects.all():
+    #     if Product.objects.filter(category=category).count() == 0:
+    #         continue
+    #     categorylist.append({
+    #         'category': category.name,
+    #         'products': Product.objects.filter(category=category)[:3]
+    #     })
     
-    cartitems = 0
-    if request.user.is_authenticated:
-        cartitems = Cart.objects.filter(user=request.user).count()
-
+   
     return render(request, 'home\index.html',{
-        'product': categorylist,
-        'cartitems': cartitems,
-        'categories': category_list()
+        # 'product': categorylist,
+        # 'categories': category_list()
     })
 
 def about(request):
-    cartitems = 0
-    if request.user.is_authenticated:
-        cartitems = Cart.objects.filter(user=request.user).count()
-
-    categorymenu = category_list()
+    
     return render(request, 'home/about.html',{
-        'cartitems': cartitems,
-        'categories': category_list()
+        
     })
 
-
+@unauthenticated_user
 def loginpage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-
+    form = LoginForm(request.POST or None)
+    
     if request.method == "POST":
-        username = request.POST.get("username")
-        password = request.POST.get("password")
-        
-        user = authenticate(request, username=username, password = password)
+        user = authenticate(request, username=request.POST.get("username"), password = request.POST.get("password"))
         if user is not None:
             login(request, user)
             return redirect('home')
         else:
             messages.warning(request, 'Username or Password Incorrect')
 
-    context = {}
+    context = {'form': form}
     return render(request, 'accounts/login.html', context)
 
 
-def logoutUser(request):
-    logout(request)
-    return redirect("login")
 
 
+@allowed_users(allowed_roles=['admin'])
 def registerpage(request):
-    if request.user.is_authenticated:
-        return redirect('home')
-
-    form = CreateUserForm()
     if request.method == "POST":
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, 'Account was created for ' + user)
-            letters = string.digits
-            userinfo = UserProfile(user=authenticate(request, username=user, password = form.cleaned_data.get('password1')))
-            userinfo.stripe_customer_id = user + ''.join(random.choice(letters) for i in range(6))
-            userinfo.save()
-            return redirect('login')
+        # form = CreateUserForm(request.POST)
+        # if request.method.is_valid():
+        if request.POST.get("password1") != request.POST.get("password2"):
+            messages.error(request, "Password and Confirm Password didn't match")
+            usergroup = UserGroupForm()
+            usergroup.user.first_name = request.POST.get("first_name")
+            usergroup.user.last_name = request.POST.get("last_name")
+            usergroup.user.username = request.POST.get("username")
+            usergroup.user.email = request.POST.get("email")
+            usergroup.group = request.POST.get("group")
+            
+            context = {'groups': Group.objects.all(), 'user': usergroup}
+            return render(request, 'accounts/register.html', context)
+            
+        if User.objects.filter(username = request.POST.get("username")).exists():
+            messages.error(request, "username already exist")
+            usergroup = UserGroupForm()
+            usergroup.user.first_name = request.POST.get("first_name")
+            usergroup.user.last_name = request.POST.get("last_name")
+            usergroup.user.username = request.POST.get("username")
+            usergroup.user.email = request.POST.get("email")
+            usergroup.group = request.POST.get("group")
+            
+            context = {'groups': Group.objects.all(), 'user': usergroup}
+            return render(request, 'accounts/register.html', context)
+            
+        user = User()
+        user.first_name = request.POST.get("first_name")
+        user.last_name = request.POST.get("last_name")
+        user.username = request.POST.get("username")
+        user.email = request.POST.get("email")
+        user.set_password(request.POST.get("password1"))
+        user.date_joined = datetime.datetime.now().strftime('%Y-%m-%d')
+        user.save()
+        user.groups.add(request.POST.get("group"))
+        messages.success(request, 'Account was created for ' + user.username)
 
-    context = {'form': form}
+        userinfo = UserProfile(user=authenticate(request, username=user.username, password = user.password))
+        userinfo.fullName = user.first_name + " " + user.last_name
+        userinfo.user = user
+        userinfo.entryDate = datetime.datetime.now().strftime('%Y-%m-%d')
+        userinfo.save()
+    
+    context = {'groups': Group.objects.all()}
     return render(request, 'accounts/register.html', context)
 
 
-@login_required(login_url='login')
-def addcart(request, slug):
-    product = Product.objects.get(slug=slug)
-    if product.quantity == 0:
-        return redirect(request.META['HTTP_REFERER'])
-    cartitem, notcreated = Cart.objects.get_or_create(item=product, user=request.user)
-    if notcreated == False: 
-        cartitem.quantity = cartitem.quantity + 1
-    cartitem.save()
-    product.quantity -= 1
-    product.sold += 1
-    product.save()
-    return redirect(request.META['HTTP_REFERER'])
-
-
-def productsearch(request, id):
-    category = Category.objects.get(id=id)
-    products = Product.objects.filter(category=category)
-
-    cartitems = 0
-    if request.user.is_authenticated:
-        cartitems = Cart.objects.filter(user=request.user).count()
-
-    return render(request, 'core\product.html',{
-        'category': category,
-        'cartitems': cartitems,
-        'product': products,
-        'categories': category_list()
-    })
-
-
-def product(request, slug):
-    product = Product.objects.get(slug=slug)
-    if request.method == 'POST' and request.POST.get("quantity"):
-        if request.user.is_authenticated == False:
-            return redirect("login")
-        qty = min(product.quantity, int(request.POST.get("quantity")))
-        cartitem, notcreated = Cart.objects.get_or_create(item=product, user=request.user)
-        if notcreated == False: 
-            cartitem.quantity = cartitem.quantity + qty
-        else:
-            cartitem.quantity = qty
-        cartitem.save()
-        product.quantity -= qty
-        product.sold += qty
-        product.save()
-    
-    reviews = Review.objects.filter(item=product)[:3]
-    if request.user.is_authenticated == True:
-        isreviewed = Review.objects.filter(item=product).filter(user=request.user).count()
-    else:
-        isreviewed = 1
-    reveiwnumber =  max(Review.objects.filter(item=product).count(), 0)
-
-    cartitems = 0
-    if request.user.is_authenticated:
-        cartitems = Cart.objects.filter(user=request.user).count()
-    products = Product.objects.filter(category=product.category)[:4]
-    
-    return render(request, 'core\index.html',{
-        'product': product,
-        'cartitems': cartitems,
-        'products': products,
-        'categories': category_list(),
-        'reviews': reviews,
-        'reviewnumber': reveiwnumber,
-        'isreviewed': isreviewed
-    })
-
-
-@login_required(login_url='login')
-def createreview(request, slug):
-    product = Product.objects.get(slug=slug)
-
-    review = Review()
-    review.user = request.user
-    review.item = product
-    review.reviewtext = request.POST.get("review")
-    review.rating = request.POST.get("ratings")
-    review.save()
-
-    product.rating = (product.rating + float(request.POST.get("ratings"))) / 2
-    product.save()
-
-    # cartitems = 0
-    # if request.user.is_authenticated:
-    #     cartitems = Cart.objects.filter(user=request.user).count()
-    # products = Product.objects.filter(category=product.category)
-
-    # reviews = Review.objects.filter(item=product)
-    # isreviewed = Review.objects.filter(item=product).filter(user=request.user).count()
-
-    return redirect("product", slug=slug)
-
-
-@login_required(login_url='login')
-def productaddcart(request, slug):
-    product = Product.objects.get(slug=slug)
-    if product.quantity == 0:
-        return redirect('home')
-    cartitem, notcreated = Cart.objects.get_or_create(item=product, user=request.user)
-    if notcreated == False:
-        cartitem.quantity = cartitem.quantity + 1
-    cartitem.save()
-    product.quantity -= 1
-    product.sold += 1
-    product.save()
-    cartitems = Cart.objects.filter(user=request.user).count()
-    products = Product.objects.filter(category=product.category)
-    return render(request, 'core\index.html',{
-        'product': product,
-        'cartitems': cartitems,
-        'products': products,
-        'categories': category_list()
-    })
-
-
-@login_required(login_url='login')
-def cart(request):
-    products = Cart.objects.filter(user=request.user)
-    if request.method == 'POST':
-        for item in products:
-            product = Product.objects.get(slug=item.item.slug)
-            qty = 0
-            if request.POST.get(item.item.slug):
-                if request.POST.get(item.item.slug) == '0':
-                    qty = -item.quantity
-                    item.delete()
-                else:
-                    qty = min(int(request.POST.get(item.item.slug))-item.quantity, product.quantity)
-                    item.quantity += qty
-                    item.save()
-            else:
-                qty = -item.quantity
-                item.delete()
-            product.quantity -= qty
-            product.sold += qty
-            product.save()
-
-    products = Cart.objects.filter(user=request.user)
-    cartitems = Cart.objects.filter(user=request.user).count()
-    total = 0.0
-    for product in products:
-        total += product.get_final_price()
-    return render(request, 'core\cart.html',{
-        'products': products,
-        'cartitems': cartitems,
-        'totalprice': total,
-        'total': total+50,
-        'categories': category_list()
-    })
-
-
-@login_required(login_url='login')
-def shipping(request):
-    products = Cart.objects.filter(user=request.user)
-    if request.method == 'POST':
-        total = 0.0
-        for item in products:
-            total += item.get_final_price()
-
-        letters = string.digits
-        created = True
-        customer = UserProfile.objects.get(user=request.user)
-        while created:
-            result_str = customer.stripe_customer_id + ''.join(random.choice(letters) for i in range(6))
-            created = Payment.objects.filter(stripe_charge_id=result_str).exists()
-
-        payment = Payment(user=request.user, amount=total+50, timestamp=datetime.datetime.now(), stripe_charge_id=result_str)
-        payment.save()
-
-        created = True
-        while created:
-            result_str = ''.join(random.choice(letters) for i in range(9))
-            created = Order.objects.filter(ref_code=result_str).exists()
-
-        order = Order(user=request.user, start_date=datetime.datetime.now(), status='RECEIVED')
-        order.ref_code = result_str
-        order.name = request.POST.get("name")
-        order.phone = "+88" + request.POST.get("phone")
-        order.shipping_address = Address.objects.get(id=request.POST.get("seladdress"))
-        order.payment = payment
-        order.save()
-
-        products = Cart.objects.filter(user=request.user)
-        for item in products:
-            orderproduct = OrderProduct(order=order, item=item.item, quantity=item.quantity)
-            orderproduct.save()
-            item.delete()
-
-        return redirect("/cart/")
-
-    products = Cart.objects.filter(user=request.user)
-    cartitems = Cart.objects.filter(user=request.user).count()
-    addresses = Address.objects.filter(user=request.user)
-
-    if cartitems == 0:
-        return redirect("cart")
-
-    total = 0.0
-    for product in products:
-        total += product.get_final_price()
+@allowed_users(allowed_roles=['admin'])
+def userlist(request):
+    users = User.objects.all()
+    userlist = []
+    for user in users:
+        userinfo = UserGroupForm()
+        userinfo.user = user
+        userinfo.group = Group.objects.get(user=user)
+        userlist.append(userinfo)
         
-    return render(request, 'core\shipping.html',{
-        'products': products,
-        'cartitems': cartitems,
-        'totalprice': total,
-        'total': total+50,
-        'addresses': addresses,
-        'categories': category_list()
-    })
+    context = {'users':  userlist}
+    return render(request, 'accounts/index.html', context)
 
 
-@login_required(login_url='login')
-def createaddress(request):
-    if request.method == 'POST':
-        address = Address()
-        address.user = request.user
-        address.country = request.POST.get("country")
-        address.city = request.POST.get("city")
-        address.area = request.POST.get("area")
-        address.street_address = request.POST.get("streetaddress")
-        address.save()
-    else:
-        return redirect("/shipping/")
-    return redirect("/shipping/")
+@allowed_users(allowed_roles=['admin'])
+def edituser(request, userid):
+    if request.method == "POST":
+        # form = CreateUserForm(request.POST)
+        # if request.method.is_valid():
+        if request.POST.get("password1") != request.POST.get("password2"):
+            messages.error(request, "Password and Confirm Password didn't match")
+            return redirect('edituser', request.POST.get("id") )
+            
+        user = User.objects.get(id=request.POST.get("id"))
+    
+        if user.username != request.POST.get("username") and User.objects.filter(username = request.POST.get("username")).exists():
+            messages.error(request, "username already exist")
+            return redirect('edituser', request.POST.get("id") )
+        
+        user.first_name = request.POST.get("first_name")
+        user.last_name = request.POST.get("last_name")
+        user.username = request.POST.get("username")
+        user.email = request.POST.get("email")
+        if request.POST.get("is_active") == "on":
+            user.is_active = True
+        else:
+            user.is_active = False
+        user.set_password(request.POST.get("password1"))
+        user.save()
+        user.groups.clear()
+        user.groups.add(request.POST.get("group"))
+
+        userinfo = UserProfile.objects.get(user=user)
+        userinfo.fullName = user.first_name + " " + user.last_name
+        userinfo.save()
+        return redirect("userlist")
+        
+    userinfo = UserGroupForm()
+    userinfo.user = User.objects.get(id=userid)
+    userinfo.group = Group.objects.get(user=userinfo.user)
+    
+    
+    context = {'user':  userinfo, 'groups': Group.objects.all()}
+    return render(request, 'accounts/edit.html', context)
 
 
-@login_required(login_url='login')
+@allowed_users(allowed_roles=['admin'])
+def deleteuser(request):
+    if request.method == "POST":
+        user = User.objects.get(id=request.POST.get("userid"))
+        UserProfile.objects.get(user=user).delete()
+        user.delete()
+        
+    return redirect('userlist')
+   
+
+@allowed_users(allowed_roles=['admin', 'operator'])
 def profile(request):
     if request.method == 'POST':
         userinfo = UserProfile.objects.get(user=request.user)
-        userinfo.fullname = request.POST.get("fullname")
-        userinfo.birthdate = request.POST.get("birthdate")
+        userinfo.fullName = request.POST.get("fullName")
+        userinfo.birthDate = request.POST.get("birthdate")
         userinfo.gender = request.POST.get("gender")
         userinfo.phone = request.POST.get("phone")
         userinfo.save()
 
     userinfo = UserProfile.objects.get(user=request.user)
-    if userinfo.birthdate != None:
-        birthdate = userinfo.birthdate.strftime('%Y-%m-%d')
+    if userinfo.birthDate != None:
+        birthdate = userinfo.birthDate.strftime('%Y-%m-%d')
     else:
         birthdate = datetime.datetime.now().strftime('%Y-%m-%d')
-    cartitems = Cart.objects.filter(user=request.user).count()
+    userinfo.entryDate = userinfo.entryDate.strftime('%d-%m-%Y')
+        
     addresses = Address.objects.filter(user=request.user)
     
     return render(request, 'core\profile.html',{
         'userinfo': userinfo,
-        'date':birthdate,
+        'birthdate':birthdate,
         'user': request.user,
-        'cartitems': cartitems,
         'addresses': addresses,
-        'categories': category_list()
     })
 
 
@@ -370,10 +206,11 @@ def createaddressprofile(request):
     if request.method == 'POST':
         address = Address()
         address.user = request.user
+        address.addressName = request.POST.get("addressName")
         address.country = request.POST.get("country")
         address.city = request.POST.get("city")
         address.area = request.POST.get("area")
-        address.street_address = request.POST.get("streetaddress")
+        address.streetAddress = request.POST.get("streetaddress")
         address.save()
     else:
         return redirect("/profile/")
@@ -389,48 +226,6 @@ def deleteaddressprofile(request, id):
     return redirect("/profile/")
 
 
-@login_required(login_url='login')
-def order(request):
-    orders = Order.objects.filter(user=request.user).order_by('-start_date')
-    ordercount = Order.objects.filter(user=request.user).count()
-    cartitems = Cart.objects.filter(user=request.user).count()
-    
-    orderlist = []
-    for order in orders:
-        orderlist.append({
-            'order': order,
-            'products': OrderProduct.objects.filter(order=order)
-        })
-
-    return render(request, 'core\order.html',{
-        'ordercount': ordercount,
-        'orders': orderlist,
-        'cartitems': cartitems,
-        'categories': category_list()
-    })
-
-
-@login_required(login_url='login')
-def trackorder(request, ref_code):
-    order = Order.objects.get(ref_code=ref_code)
-    orderproducts = OrderProduct.objects.filter(order=order)
-    orderproductcount = OrderProduct.objects.filter(order=order).count()
-    cartitems = Cart.objects.filter(user=request.user).count()
-    payment = Payment.objects.get(order=order).amount
-
-    return render(request, 'core\ordertrack.html',{
-        'ordercount': orderproductcount,
-        'orderproducts': orderproducts,
-        'order': order,
-        'totalprice': payment-50,
-        'total': payment,
-        'cartitems': cartitems,
-        'categories': category_list()
-    })
-
-
-@login_required(login_url='login')
-def cancelorder(request):
     if request.method == 'POST':
         order = Order.objects.get(ref_code=request.POST.get("ref_code"))
         order.status = 'CANCELLED'
