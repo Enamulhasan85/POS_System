@@ -35,7 +35,10 @@
                                 {{ purchaseform.company|as_crispy_field }}
                             </div>
                             <div class="col-sm-12  pe-3">
-                                {{ purchaseform.provider|as_crispy_field }}
+                                {{ purchaseform.supplier|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3">
+                                {{ purchaseform.invoice|as_crispy_field }}
                             </div>
                             <div class="col-sm-12  pe-3">
                                 {{ purchaseform.note|as_crispy_field }}
@@ -54,10 +57,20 @@
                                     {{ purchasedetailform.product|as_crispy_field }}
                                 </div>
                                 <div class="col-sm-6">
-                                    {{ purchasedetailform.quantity|as_crispy_field }}
+                                    <div id="div_id_quantity" class="mb-3">
+                                        <label for="id_quantity" class="form-label requiredField">Quantity<span class="asteriskField">*</span></label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="quantity" class="form-control form-control-sm" min="0" required="" id="id_quantity">
+                                            <span class="input-group-text">.00</span>
+                                        </div>
+                                    </div>
+                                    {% comment %} {{ purchasedetailform.quantity|as_crispy_field }} {% endcomment %}
                                 </div>
                                 <div class="col-sm-4 mt-0">
                                     {{ purchasedetailform.tradePrice|as_crispy_field }}
+                                </div>
+                                <div class="col-sm-4 mt-0">
+                                    {{ purchasedetailform.salePrice|as_crispy_field }}
                                 </div>
                                 <div class="col-sm-4 mt-0">
                                     {{ purchasedetailform.mrp|as_crispy_field }}
@@ -71,18 +84,19 @@
                                 <div class="col-sm-4 mt-0">
                                     {{ purchasedetailform.expirationDate|as_crispy_field }}
                                 </div>
-                                <div class="col-sm-4 mt-auto">
+                                <div class="col-sm-4 ms-auto mt-0">
                                     <input class="btn btn-primary btn-sm mb-3" type="submit" value="Add Product">
                                 </div>
                             </form>
 
-                            <table class="table table-sm table-bordered table-hover text-center mt-3 mx-1 align-middle">
+                            <table class="table table-sm table-bordered table-hover text-center mt-3 mx-1 align-middle" style="font-size: 14px;">
                                 <thead class="table-light">
                                     <tr>
                                         <th scope="col">#</th>
                                         <th scope="col">Product</th>
                                         <th scope="col">Quantity</th>
                                         <th scope="col">TradePrice</th>
+                                        <th scope="col">SalePrice</th>
                                         <th scope="col">MRP</th>
                                         <th scope="col">TotalPrice</th>
                                         <th scope="col">MFG. Date</th>
@@ -109,11 +123,12 @@
                                     </tr> {% endcomment %}
                                     {% for purchasedetail in purchasedetails %}
                                         <tr>
-                                            <th scope="row">{{forloop.counter}}</th>
+                                            <th class="serial">{{forloop.counter}}</th>
                                             <td class="id_product d-none">{{purchasedetail.product_id}}</td>
                                             <td class="product">{{purchasedetail.product}}</td>
                                             <td class="quantity">{{purchasedetail.quantity}}</td>
                                             <td class="tradePrice">{{purchasedetail.tradePrice}}</td>
+                                            <td class="salePrice">{{purchasedetail.stock.salePrice}}</td>
                                             <td class="mrp">{{purchasedetail.stock.mrp}}</td>
                                             <td class="totalPrice">{{purchasedetail.totalPrice}}</td>
                                             <td class="manufacturingDate">{{purchasedetail.stock.manufacturingDate}}</td>
@@ -154,7 +169,8 @@
             url : "/product/get/", // the endpoint
             type : "GET", // http method
             data: { 
-                'companyid': $('#id_company').val() 
+                'companyid': $('#id_company').val() ,
+                'categoryid': "",
             },
             // handle a successful response
             success : function(data) {
@@ -166,6 +182,8 @@
                         text : item.title 
                     }));
                 });
+                
+                $("#id_product").change();
 
             },
             // handle a non-successful response
@@ -176,16 +194,61 @@
         });
     });
 
+    $("#id_product").change(function(){
+        $.ajax({
+            url : "/product/getinfo/", // the endpoint
+            type : "GET", // http method
+            data: { 
+                'productid': $('#id_product').val(),
+            },
+            // handle a successful response
+            success : function(data) {
+                console.log(data); // log the returned json to the console
+
+                $("#id_quantity").parent().find("span").text(data.productinfo.unit);
+               
+            },
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(err); // provide a bit more info about the error to the console
+                console.log(errmsg); // provide a bit more info about the error to the console
+            }
+        });
+    });
 
     $("#id_tradePrice, #id_quantity").change(function(){
         $("#id_totalPrice").val($("#id_tradePrice").val()*$("#id_quantity").val());
         $("#id_mrp").attr({
             "min" : $("#id_tradePrice").val()  // values (or variables) here
          });
+         $("#id_salePrice").attr({
+            "min" : $("#id_tradePrice").val()  // values (or variables) here
+         });
     });
 
 
+    function alreadyinqueue(){
+        var ret = false;
+        $("#ProductTable > tr").each(function(index, tr) { 
+            //console.log(index);
+            //console.log(tr);
+            if($(tr).find('.id_product').text() == $('#id_product').val()) {
+                alert("Product already added to the queue!!");
+                ret = true;
+                return false;
+            }
+        });
+
+        return ret;
+    }
+
     function addData(){
+
+        //console.log("here");
+        if(alreadyinqueue()){
+            return;
+        }
+
         //console.log("here");
         var serialno = Math.max(1, Number($("#ProductTable tr:last").find(".serial").text()) + 1);
         $("#ProductTable tr:last").after('<tr><td class="serial">'+serialno
@@ -193,6 +256,7 @@
                                         +'</td><td class="product">'+$('#id_product option:selected').text()
                                         +'</td><td class="quantity">'+$('#id_quantity').val()
                                         +'</td><td class="tradePrice">'+$('#id_tradePrice').val()
+                                        +'</td><td class="salePrice">'+$('#id_salePrice').val()
                                         +'</td><td class="mrp">'+$('#id_mrp').val()
                                         +'</td><td class="totalPrice">'+$('#id_totalPrice').val()
                                         +'</td><td class="manufacturingDate">'+$('#id_manufacturingDate').val()
@@ -201,7 +265,7 @@
                                         +'</td></tr>');
 
         $("#totalPurchasePrice").val(Number($("#totalPurchasePrice").val())+Number($('#id_totalPrice').val()));
-        
+
     }
 
     function deleteRow(row){
@@ -230,6 +294,7 @@
                         'tradePrice': $(tr).find('.tradePrice').text(),
                         'quantity': $(tr).find('.quantity').text(),
                         'totalPrice': $(tr).find('.totalPrice').text(),
+                        'salePrice': $(tr).find('.salePrice').text(),
                         'mrp': $(tr).find('.mrp').text(),
                         'manufacturingDate': $(tr).find('.manufacturingDate').text(),
                         'expirationDate': $(tr).find('.expirationDate').text(),
@@ -241,7 +306,8 @@
 
             var formdata = {
                 'company': $('#id_company').val(),
-                'provider': $('#id_provider').val(),
+                'supplier': $('#id_supplier').val(),
+                'invoice': $('#id_invoice').val(),
                 'note': $('#id_note').val(),
                 'totalPurchasePrice': $('#totalPurchasePrice').val(),
                 'purchaseProducts': rows,
@@ -256,7 +322,8 @@
                 type : "POST", // http method
                 data: { 
                     'company': $('#id_company').val(),
-                    'provider': $('#id_provider').val(),
+                    'supplier': $('#id_supplier').val(),
+                    'invoice': $('#id_invoice').val(),
                     'note': $('#id_note').val(),
                     'totalPurchasePrice': $('#totalPurchasePrice').val(),
                     'purchaseProducts': rows,

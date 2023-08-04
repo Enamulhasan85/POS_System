@@ -242,7 +242,7 @@
 
 #sidebar-wrapper {
   min-height: 100vh;
-  margin-left: -225px;
+  margin-left: -235px;
   transition: margin 0.25s ease-out;
 }
 
@@ -252,7 +252,7 @@
 }
 
 #sidebar-wrapper .list-group {
-  width: 225px;
+  width: 235px;
 }
 
 #page-content-wrapper {
@@ -272,6 +272,6 @@ body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
     width: 100%;
   }
   body.sb-sidenav-toggled #wrapper #sidebar-wrapper {
-    margin-left: -225px;
+    margin-left: -235px;
   }
 }

@@ -160,7 +160,7 @@ def edituser(request, userid):
     userinfo.group = Group.objects.get(user=userinfo.user)
     
     
-    context = {'user':  userinfo, 'groups': Group.objects.all()}
+    context = {'userinfo':  userinfo, 'groups': Group.objects.all()}
     return render(request, 'accounts/edit.html', context)
 
 

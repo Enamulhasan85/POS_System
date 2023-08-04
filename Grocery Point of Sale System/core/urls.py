@@ -1,5 +1,5 @@
 from django.urls import path
-from core import views, setupviews, purchaseviews, stockviews
+from core import views, setupviews, purchaseviews, stockviews, saleviews
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
 from django.conf import settings
@@ -23,6 +23,11 @@ urlpatterns = [
     path('company/edit/<int:id>', setupviews.editcompany, name='editcompany'),
     path('company/delete/', setupviews.deletecompany, name='deletecompany'),
     
+    path('supplier/index/', setupviews.supplierlist, name='supplierlist'),
+    path('supplier/create/', setupviews.createsupplier, name='createsupplier'),
+    path('supplier/edit/<int:id>', setupviews.editsupplier, name='editsupplier'),
+    path('supplier/delete/', setupviews.deletesupplier, name='deletesupplier'),
+    
     path('customer/index/', setupviews.customerlist, name='customerlist'),
     path('customer/create/', setupviews.createcustomer, name='createcustomer'),
     path('customer/edit/<int:id>', setupviews.editcustomer, name='editcustomer'),
@@ -38,6 +43,7 @@ urlpatterns = [
     path('product/edit/<int:id>', setupviews.editproduct, name='editproduct'),
     path('product/delete/', setupviews.deleteproduct, name='deleteproduct'),
     path('product/get/', setupviews.getproduct, name='getproduct'),
+    path('product/getinfo/', setupviews.getproductinfo, name='getproductinfo'),
     
     path('purchase/index/', purchaseviews.purchaselist, name='purchaselist'),
     path('purchase/create/', purchaseviews.createpurchase, name='createpurchase'),
@@ -46,6 +52,14 @@ urlpatterns = [
     
     path('stock/index/', stockviews.stocklist, name='stocklist'),
     path('stock/edit/<int:id>', stockviews.editstock, name='editstock'),
+    
+    path('sale/index/', saleviews.salelist, name='salelist'),
+    path('sale/create/', saleviews.createsale, name='createsale'),
+    path('sale/refund/<int:id>', saleviews.refundsale, name='refundsale'),
+    path('sale/delete/', saleviews.deletesale, name='deletesale'),
+    
+    path('due/index/', saleviews.duelist, name='duelist'),
+    path('due/collection/<int:id>', saleviews.duecollection, name='duecollection'),
     
     path('profile/', views.profile, name='profile'),
     path('profile/createaddress/', views.createaddressprofile, name='createaddressprofile'),

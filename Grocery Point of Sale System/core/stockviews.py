@@ -32,12 +32,29 @@ def stocklist(request):
 
 
 @allowed_users(allowed_roles=['admin', 'operator'])
-def editstock(request):
+def editstock(request, id):
     # dictionary for initial data with
     # field names as keys
-    context = {}
+    context ={}
+    
+    # fetch the object related to passed id
+    obj = get_object_or_404(Stock, id = id)
  
-    # add the dictionary during initialization
-    context["dataset"] = Stock.objects.all()
-         
-    return render(request, "stock/index.html", context)
+    # pass the object as instance in form
+    form = StockForm(request.POST or None, instance = obj)
+ 
+    # save the data from the form and
+    # redirect to stocklist
+    if request.method =="POST":
+        obj.tradePrice = form['tradePrice'].value()
+        obj.salePrice = form['salePrice'].value()
+        obj.mrp = form['mrp'].value()
+        obj.discount = form['discount'].value()
+        obj.expirationDate = form['expirationDate'].value()
+        obj.save()
+        return redirect("stocklist")
+ 
+    # add form dictionary to context
+    context["form"] = form
+ 
+    return render(request, "stock/edit.html", context)

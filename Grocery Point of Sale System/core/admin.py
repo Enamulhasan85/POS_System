@@ -22,7 +22,7 @@ class StockAdmin(admin.ModelAdmin):
     list_display = ('user', 'product', 'tradePrice', 'mrp', 'entryDate', 'expirationDate')
    
 class PurchaseAdmin(admin.ModelAdmin):
-    list_display = ('user', 'provider', 'entryDate' )
+    list_display = ('user', 'supplier', 'entryDate' )
      
 class PurchaseDetailAdmin(admin.ModelAdmin):
     list_display = ('product', 'quantity', 'tradePrice')
@@ -31,7 +31,7 @@ class SaleAdmin(admin.ModelAdmin):
     list_display = ('user', 'totalPrice', 'date', 'status')
        
 class RefundAdmin(admin.ModelAdmin):
-    list_display = ('sale', 'user', 'Amount',)
+    list_display = ('sale', 'user', 'saleDetail', 'quantity', 'date',)
       
 class SaleDetailAdmin(admin.ModelAdmin):
     list_display = ('sale', 'product', 'quantity')
@@ -43,7 +43,7 @@ class AddressAdmin(admin.ModelAdmin):
     list_display = ('user', 'streetAddress', 'city', )
     
 class DueCollectionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'due', 'Amount',  'date')
+    list_display = ('user', 'due', 'amount',  'date')
 
 admin.site.register(UserProfile, ProfileAdmin)
 admin.site.register(Address, AddressAdmin)

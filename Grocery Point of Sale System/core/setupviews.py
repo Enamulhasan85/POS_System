@@ -92,6 +92,78 @@ def deletecompany(request):
         # home page
         return redirect("companylist")
  
+
+@allowed_users(allowed_roles=['admin', 'operator'])
+def supplierlist(request):
+    # dictionary for initial data with
+    # field names as keys
+    context ={}
+ 
+    # add the dictionary during initialization
+    context["dataset"] = Supplier.objects.all()
+         
+    return render(request, "supplier/index.html", context)
+
+
+@allowed_users(allowed_roles=['admin', 'operator'])
+def createsupplier(request):
+    # dictionary for initial data with
+    # field names as keys
+    context ={}
+ 
+    # add the dictionary during initialization
+    form = SupplierForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        return redirect("supplierlist")
+        
+         
+    context['form']= form
+         
+    return render(request, "supplier/create.html", context)
+
+
+@allowed_users(allowed_roles=['admin', 'operator'])
+def editsupplier(request, id):
+    # dictionary for initial data with
+    # field names as keys
+    context ={}
+    
+    # fetch the object related to passed id
+    obj = get_object_or_404(Supplier, id = id)
+ 
+    # pass the object as instance in form
+    form = SupplierForm(request.POST or None, instance = obj)
+ 
+    # save the data from the form and
+    # redirect to supplierlist
+    if form.is_valid():
+        form.save()
+        return redirect("supplierlist")
+ 
+    # add form dictionary to context
+    context["form"] = form
+ 
+    return render(request, "supplier/edit.html", context)
+
+
+@allowed_users(allowed_roles=['admin', 'operator'])
+def deletesupplier(request):
+    # dictionary for initial data with
+    # field names as keys
+    context ={}
+    
+    if request.method =="POST":
+        # fetch the object related to passed id
+        obj = get_object_or_404(Supplier, id = request.POST.get("id"))
+        
+        # delete object
+        obj.delete()
+        
+        # after deleting redirect to
+        # home page
+        return redirect("supplierlist")
+ 
  
  
 @allowed_users(allowed_roles=['admin', 'operator'])
@@ -288,7 +360,7 @@ def editproduct(request, id):
     
     # save the data from the form and
     # redirect to productlist
-    if request.method == "POST" and request.FILES:
+    if request.method == "POST":
         form = ProductForm(request.POST, request.FILES, instance = obj)
         if form.is_valid():
             form.save()
@@ -323,16 +395,50 @@ def getproduct(request):
     # dictionary for initial data with
     # field names as keys
     data = []
+    products = Product.objects.all().order_by('title')
 
     companyid = request.GET.get('companyid')
-    if companyid == '':
-        return JsonResponse({'productlist': data}, status=200, content_type="application/json")
-            
-    company = Company.objects.get(id=companyid)
-    products = Product.objects.filter(company=company)
+    categoryid = request.GET.get('categoryid')
+    
+    if companyid != '':
+        company = Company.objects.get(id=companyid)    
+        products = products.filter(company=company)
+
+        
+    if categoryid != '':
+        category = Category.objects.get(id=categoryid) 
+        products = products.filter(category=category)
+                    
     
     for product in products:
-        data.append({'id':product.id, 'title':product.title })
+        str = product.title + " (" + product.productCode + ")"
+        data.append({'id':product.id, 'title': str})
     
     return JsonResponse({'productlist': data}, status=200, content_type="application/json")
+ 
+    
+@allowed_users(allowed_roles=['admin', 'operator'])
+def getproductinfo(request):
+    # dictionary for initial data with
+    # field names as keys
+    productid = request.GET.get('productid')
+    
+    product = Product.objects.get(id=productid)
+    
+    if Stock.objects.filter(product=product).count():
+        lateststock = Stock.objects.filter(product=product).order_by("-id")[:1].get()
+        unitPrice = lateststock.salePrice
+        discount = lateststock.discount    
+        inStock = Stock.objects.filter(product=product).aggregate(inStock = Sum("quantity") - Sum("sold"))
+        inStock = inStock["inStock"]
+    else :
+        unitPrice = 0
+        discount = 0
+        inStock = 0
+    
+    unit = product.get_unit_display()
+    
+    data = {'id': product.id, 'inStock': inStock, 'unitPrice': unitPrice, 'discount': discount, 'unit': unit}
+    
+    return JsonResponse({'productinfo': data}, status=200, content_type="application/json")
  

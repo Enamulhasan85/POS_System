@@ -47,7 +47,8 @@ def createpurchase(request):
         
         purchase.user = request.user
         purchase.company = Company.objects.get(id=request.POST.get("company"))
-        purchase.provider = request.POST.get("provider")
+        purchase.supplier = Supplier.objects.get(id=request.POST.get("supplier"))
+        purchase.invoice = request.POST.get("invoice")
         purchase.totalPrice = request.POST.get("totalPurchasePrice")
         purchase.note = request.POST.get("note")
         purchase.entryDate = datetime.datetime.now()
@@ -64,9 +65,11 @@ def createpurchase(request):
             stock = Stock()
             stock.user = request.user
             stock.product = purchase_detail.product
+            stock.purchase = purchase
             stock.purchasedetail = purchase_detail
             stock.quantity = purchase_detail.quantity
             stock.tradePrice = purchase_detail.tradePrice
+            stock.salePrice = product["salePrice"]
             stock.mrp = product["mrp"]
             stock.entryDate = datetime.datetime.now()
             stock.manufacturingDate = product["manufacturingDate"]
@@ -101,7 +104,8 @@ def editpurchase(request, id):
         # print(data)
         
         purchase.company = Company.objects.get(id=request.POST.get("company"))
-        purchase.provider = request.POST.get("provider")
+        purchase.supplier = Supplier.objects.get(id=request.POST.get("supplier"))
+        purchase.invoice = request.POST.get("invoice")
         purchase.totalPrice = request.POST.get("totalPurchasePrice")
         purchase.note = request.POST.get("note")
         purchase.save()
@@ -124,6 +128,7 @@ def editpurchase(request, id):
             stock.purchasedetail = purchase_detail
             stock.quantity = purchase_detail.quantity
             stock.tradePrice = purchase_detail.tradePrice
+            stock.salePrice = product["salePrice"]
             stock.mrp = product["mrp"]
             stock.entryDate = purchase.entryDate
             stock.manufacturingDate = product["manufacturingDate"]
