@@ -3,6 +3,7 @@ from django.forms import ModelChoiceField
 from .models import *
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User, Group
+import datetime
 
 
 class CreateUserForm(UserCreationForm):
@@ -311,4 +312,39 @@ class DueCollectionForm(forms.ModelForm):
         labels = {
             "amount": "Due Collected",
             "note": "Note",
-        }
+        }  
+        
+        
+class PurchaseSummaryForm(forms.Form):
+    FromDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    ToDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    company = ModelChoiceField(queryset=Company.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+    supplier = ModelChoiceField(queryset=Supplier.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+
+
+        
+class ProductInStockForm(forms.Form):
+    FromDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    ToDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    company = ModelChoiceField(queryset=Company.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+    category = ModelChoiceField(queryset=Category.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+    product = ModelChoiceField(queryset=Product.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+    productCode = forms.CharField(required=False, widget=forms.TextInput(attrs={'class':'form-control-sm', },))
+
+       
+       
+class SalesSummaryForm(forms.Form):
+    FromDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    ToDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    user = ModelChoiceField(queryset=User.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+    customer = ModelChoiceField(queryset=Customer.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+   
+        
+       
+class SalesByCustomerForm(forms.Form):
+    FromDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    ToDate = forms.DateField(widget=forms.TextInput(attrs={'type':'date', 'class':'form-control-sm', 'value': datetime.datetime.now().strftime('%Y-%m-%d')},))
+    customer = ModelChoiceField(queryset=Customer.objects.all(), required=False, widget=forms.Select(attrs={'class':'form-select-sm', },))
+   
+        
+      

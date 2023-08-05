@@ -195,7 +195,7 @@ def refundsale(request, id):
         duecollect = duecollections.aggregate(duecollection = Sum("amount"))["duecollection"]
     
     refundform = RefundForm()
-    refundform.fields["totalRefund"].widget.attrs['max'] = sale.paidAmount - totalrefund
+    refundform.fields["totalRefund"].widget.attrs['max'] = sale.paidAmount - totalrefund + duecollect
     refundform.fields["due"].widget.attrs['max'] = sale.get_dueAmount() - dueRefund - duecollect
     refundform.fields["note"].widget.attrs['rows'] = '2'
     

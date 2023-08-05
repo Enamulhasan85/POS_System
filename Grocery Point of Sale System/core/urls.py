@@ -1,5 +1,5 @@
 from django.urls import path
-from core import views, setupviews, purchaseviews, stockviews, saleviews
+from core import views, setupviews, purchaseviews, stockviews, saleviews, reportviews
 from django.views.generic.base import RedirectView
 from django.conf.urls.static import static
 from django.conf import settings
@@ -57,6 +57,11 @@ urlpatterns = [
     path('sale/create/', saleviews.createsale, name='createsale'),
     path('sale/refund/<int:id>', saleviews.refundsale, name='refundsale'),
     path('sale/delete/', saleviews.deletesale, name='deletesale'),
+    
+    path('report/purchaseSummary/', reportviews.purchaseSummary, name='purchaseSummary'),
+    path('report/productInStock/', reportviews.productInStock, name='productInStock'),
+    path('report/salesSummary/', reportviews.salesSummary, name='salesSummary'),
+    path('report/salesByCustomer/', reportviews.salesByCustomer, name='salesByCustomer'),
     
     path('due/index/', saleviews.duelist, name='duelist'),
     path('due/collection/<int:id>', saleviews.duecollection, name='duecollection'),

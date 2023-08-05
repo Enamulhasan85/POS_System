@@ -183,10 +183,11 @@
                                 </div> {% endcomment %}  
                         
                                 <ul class="px-3 m-0">                                    
-                                    <a class="btn btn-primary menulink mb-1" href="{% url 'register' %}" >Purchase Summary</a>
-                                    <a class="btn btn-primary menulink " href="{% url 'userlist' %}" >Sale Summary</a>
-                                    <a class="btn btn-primary menulink " href="{% url 'userlist' %}" >Sale Summary Report</a>
-                                    <a class="btn btn-primary menulink " href="{% url 'userlist' %}" >Sale Summary Report</a>
+                                    <a class="btn btn-primary menulink mb-1" href="{% url 'purchaseSummary' %}" >Purchase Summary</a>
+                                    <a class="btn btn-primary menulink mb-1" href="{% url 'productInStock' %}" >Product InStock</a>
+                                    <a class="btn btn-primary menulink mb-1" href="{% url 'salesSummary' %}" >Sales Summary</a>
+                                    <a class="btn btn-primary menulink mb-1" href="{% url 'salesByCustomer' %}" >Sales by Customer</a>
+                                    {% comment %} <a class="btn btn-primary menulink mb-1" href="{% url 'purchaseSummary' %}" >Due Summary</a> {% endcomment %}
                                 </ul>
                             </div>
                         </div>
