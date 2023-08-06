@@ -16,7 +16,7 @@ def authenticated_user(view_func):
         if request.user.is_authenticated:
             return view_func(request, *args, **kwargs)
         else:
-            return HttpResponse("you area note at.")
+            return HttpResponse("You are not authorized to access this page.!!")
     return wrapper_func
 
 
@@ -33,7 +33,7 @@ def allowed_users(allowed_roles=[]):
             if group in allowed_roles:
                 return view_func(request, *args, **kwargs)
             else:
-                return HttpResponse("you area note at.")
+                return HttpResponse("You are not authorized to access this page.!!")
                         
         return wrapper_func
     return decorator
