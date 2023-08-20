@@ -34,7 +34,7 @@ CSRF_TRUSTED_ORIGINS = ['https://web-production-3640.up.railway.app']
 # CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
 
 # SECURITY WARNING: don't run with debug turned on in production!
- DEBUG = True
+DEBUG = True
 # DEBUG = os.environ.get('DJANGO_DEBUG', '') != 'False'
 
 ## For example, for a site URL at 'web-production-3640.up.railway.app'
@@ -45,8 +45,8 @@ ALLOWED_HOSTS = ['web-production-45b2.up.railway.app', '127.0.0.1']
 # (you might decide to change the site a few times).
 # ALLOWED_HOSTS = ['.railway.com','127.0.0.1']
 
-# Application definition
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -105,6 +105,10 @@ DATABASES = {
     }
 }
 
+# Update database configuration from $DATABASE_URL.
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -156,14 +160,6 @@ import os
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'Uploads')
 
 MEDIA_URL = '/Uploads/'
-
-
-# Update database configuration from $DATABASE_URL.
-import dj_database_url
-
-db_from_env = dj_database_url.config(conn_max_age=500)
-
-DATABASES['default'].update(db_from_env)
 
 
 # Simplified static file serving.
