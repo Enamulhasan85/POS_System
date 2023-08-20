@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=E:\Enam\Documents & Works\Projects\POS_System\Grocery Point of Sale System\.venv
+set VIRTUAL_ENV=E:\Enam\Documents_Works\Projects\POS_System\.venv
 
 if not defined PROMPT set PROMPT=$P$G
 
