@@ -151,6 +151,11 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # The URL to use when referring to static files (where they will be served from)
 STATIC_URL = '/static/'
 
+# Simplified static file serving.
+# https://pypi.org/project/whitenoise/
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -159,10 +164,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 import os
 
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'Uploads')
-
 MEDIA_URL = '/Uploads/'
-
-
-# Simplified static file serving.
-# https://pypi.org/project/whitenoise/
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
