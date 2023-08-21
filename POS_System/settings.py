@@ -83,10 +83,8 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(SETTINGS_PATH, 'templates'),
                  os.path.join(SETTINGS_PATH, 'core', 'static', 'templates'),
-                 os.path.join(SETTINGS_PATH, 'staticfiles', 'templates'),
-                 BASE_DIR / 'busy-day' / 'staticfiles' / 'templates',
-                 BASE_DIR / 'staticfiles' / 'templates',
-                 BASE_DIR / 'staticfiles',
+                 os.path.join(SETTINGS_PATH, 'static', 'templates'),
+                 BASE_DIR / 'static' / 'templates',
                 ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -152,7 +150,7 @@ USE_TZ = True
 
 
 # The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'static'
 
 # The URL to use when referring to static files (where they will be served from)
 STATIC_URL = '/static/'
