@@ -1,1 +1,1 @@
-web: gunicorn 'POS_System.wsgi'
+web: python manage.py migrate && python manage.py collectstatic --no-input && gunicorn POS_System.wsgi
