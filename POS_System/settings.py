@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&
 
 ## For example, for a site URL is at 'web-production-3640.up.railway.app'
 ## (replace the string below with your own site URL):
-CSRF_TRUSTED_ORIGINS = ['https://web-production-3640.up.railway.app']
+CSRF_TRUSTED_ORIGINS = ['https://web-production-45b2.up.railway.app']
 
 # During development/for this tutorial you can instead set just the base URL
 # CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
@@ -76,16 +76,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'POS_System.urls'
 
-SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
-
-
-
+SETTINGS_PATH = Path(__file__).resolve().parent.parent
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),
-                 os.path.join(BASE_DIR, 'core', 'static', 'templates'),
+        'DIRS': [os.path.join(SETTINGS_PATH, 'templates'),
+                 os.path.join(SETTINGS_PATH, 'core', 'static', 'templates'),
+                 os.path.join(SETTINGS_PATH, 'staticfiles', 'templates'),
+                 BASE_DIR / 'busy-day' / 'staticfiles' / 'templates',
+                 BASE_DIR / 'staticfiles' / 'templates',
+                 BASE_DIR / 'staticfiles',
                 ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -148,9 +149,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 
 # The absolute path to the directory where collectstatic will collect static files for deployment.
