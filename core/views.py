@@ -29,7 +29,7 @@ def home(request):
     #     })
     
    
-    return render(request, 'home\index.html',{
+    return render(request, 'home/index.html',{
         # 'product': categorylist,
         # 'categories': category_list()
     })

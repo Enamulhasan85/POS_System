@@ -81,11 +81,7 @@ SETTINGS_PATH = Path(__file__).resolve().parent.parent
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(SETTINGS_PATH, 'templates'),
-                 os.path.join(SETTINGS_PATH, 'core', 'static', 'templates'),
-                 os.path.join(SETTINGS_PATH, 'static', 'templates'),
-                 BASE_DIR / 'static' / 'templates',
-                ],
+        'DIRS': [BASE_DIR / 'static' / 'templates',],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -112,9 +108,9 @@ DATABASES = {
 }
 
 # Update database configuration from $DATABASE_URL.
-# import dj_database_url
-# db_from_env = dj_database_url.config(conn_max_age=500)
-# DATABASES['default'].update(db_from_env)
+import dj_database_url
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
 
 
 # Password validation
@@ -166,5 +162,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 import os
 
-MEDIA_ROOT =  os.path.join(BASE_DIR, 'Uploads')
-MEDIA_URL = '/Uploads/'
+MEDIA_ROOT =  BASE_DIR / 'static' / 'core' / 'images'
+MEDIA_URL = '/media/core/images/'
