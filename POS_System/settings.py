@@ -76,10 +76,17 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'POS_System.urls'
 
+SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
+
+
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),
+                 os.path.join(BASE_DIR, 'core', 'static', 'templates'),
+                ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

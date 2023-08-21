@@ -1,0 +1,583 @@
+{% extends 'core/base/base.html' %}
+
+
+{% block title %}Sale Refund{% endblock %}
+
+
+{% block site_css %}{% endblock %}
+
+
+{% block body %}
+    {% load crispy_forms_tags %}
+
+    <section  class="py-4 px-0">
+		<div class="row p-2">
+			<div class="col-sm-11 p-3 border mx-auto bg-light">
+				<div class="text-center pb-2 border-bottom">
+					<h3 class="m-0">Sale Refund</h3>
+				</div>
+
+                {% if messages %}
+                    {% for message in messages %}
+						{% if message.tags == "success" %}
+							<div class="alert alert-success p-2 mx-3 mt-3 mb-1"><b>{{ message }}</b></div>
+						{% else %}
+							<div class="alert alert-danger p-2 mx-3 mt-3 mb-1"><b>{{ message }}</b></div>
+						{% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <div class="row p-2">
+                    <form id="sale_form" method="POST" action="javascript:void(0);" enctype="multipart/form-data" class="col-sm-3 pt-1 px-1 border-end">
+                        
+                        <div class="">
+                            <div class="col-sm-12 pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.customer|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12 pe-3" style="margin-bottom: 0px;">
+                                <div id="div_id_user" class="mb-3">
+                                    <label for="id_user" class="form-label">Salesperson</label>
+                                    <input type="text" name="user" value="{{sale.user}}" class="form-control form-control-sm" disabled="true" id="id_user">
+                                </div>
+                            </div>
+                            <div class="col-sm-12 pe-3" style="margin-bottom: 0px;">
+                                <div id="div_id_date" class="mb-3">
+                                    <label for="id_date" class="form-label">Date</label>
+                                    <input type="text" name="date" value="{{sale.date}}" class="form-control form-control-sm" disabled="true" id="id_date">
+                                </div>
+                            </div>
+                            <div class="col-sm-12 pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.saleStripeId|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.note|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.totalPrice|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.discountAmount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.payable|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.paidAmount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.due|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-12  pe-3" style="margin-bottom: 0px;">
+                                {{ saleform.changeAmount|as_crispy_field }}
+                            </div>
+                        </div>
+                    </form>
+
+                    {% comment %} <hr/> {% endcomment %}
+
+                    <div class="col-sm-9 pt-1 px-1 m-0">
+                        {% comment %} <div class="row g-4 mx-0 mt-0">
+                            
+                        </div> {% endcomment %}
+
+                        <div class="text-center mx-1 mt-2 mb-4 px-1 align-middle">
+                            {% comment %} <div class="text-center pb-2 border-bottom">
+                                <h4 class="m-0">Sale Products</h3>
+                            </div> {% endcomment %}
+                            <table class="table table-sm table-bordered border-dark text-center mt-3 mx-1 align-middle" style="font-size: 14px;">
+                                <thead class="table-light border-dark">
+                                    <tr >
+                                        <th scope="col" colspan="8" class="bg-warning">Sale Products</th>
+                                    </tr>
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col" class="d-none">saleDetailId</th>
+                                        <th scope="col" class="d-none">ProductId</th>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">UnitPrice</th>
+                                        <th scope="col">Discount</th>
+                                        <th scope="col">TotalPrice</th>
+                                        <th scope="col">Refunded</th>
+                                        <th scope="col" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ProductTable">
+                                    {% for saledetail in saledetails %}
+                                        <tr>
+                                            <th class="serial">{{forloop.counter}}</th>
+                                            <td class="id d-none">{{saledetail.id}}</td>
+                                            <td class="id_product d-none">{{saledetail.product_id}}</td>
+                                            <td class="product">{{saledetail.product}}</td>
+                                            <td class="quantity">{{saledetail.quantity}}</td>
+                                            <td class="unitPrice">{{saledetail.unitPrice}}</td>
+                                            <td class="discount"><span>{{saledetail.discount}}</span>%</td>
+                                            <td class="totalPrice">{{saledetail.totalPrice}}</td>
+                                            <td class="refunded">{{saledetail.refunded}}</td>
+                                            <td class="action">
+                                                <button class="btn btn-warning btn-sm fw-bold" onclick="refund(this);">
+                                                    Refund  
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <form id="table_form" class="row g-4 mx-2 my-0 p-2 pt-3 alert alert-success" action="" method="POST">
+                            {% comment %} <div class="col-sm-6 ">
+                                {{ saledetailform.company|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-6">
+                                {{ saledetailform.category|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0">
+                                {{ saledetailform.product|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0">
+                                <div id="div_id_quantity" class="mb-3">
+                                    <label for="id_quantity" class="form-label requiredField">Quantity<span class="asteriskField">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="quantity" class="form-control form-control-sm" min="0" required="" id="id_quantity" max="0">
+                                        <span class="input-group-text">.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-sm-4 mt-0">
+                                {{ saledetailform.inStock|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0">
+                                {{ saledetailform.unitPrice|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0">
+                                {{ saledetailform.discount|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0">
+                                {{ saledetailform.totalPrice|as_crispy_field }}
+                            </div> {% endcomment %}
+                            {% csrf_token %}
+                            <div class="col-sm-4 mt-0 d-none">
+                                <input type="text" name="customer" class="d-none" id="customer">
+                            </div>
+                            <div class="col-sm-4 mt-0 d-none">
+                                <input type="text" name="saleDetailId" class="d-none" id="id_saleDetail">
+                            </div>
+                            <div class="col-sm-4 mt-0 d-none">
+                                <input type="text" name="sale" class="d-none" id="sale" value="{{sale.id}}">
+                            </div>
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                {{ refundform.product|as_crispy_field }}
+                                <input type="text" name="productid" class="d-none" id="productid" value="">
+                            </div>
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                <div id="div_id_quantity" class="mb-3">
+                                    <label for="id_quantity" class="form-label requiredField">Quantity<span class="asteriskField">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="quantity" class="form-control form-control-sm" min="0" required="" id="id_quantity" max="0">
+                                        <span class="input-group-text">.00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                {{ refundform.inStock|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                {{ refundform.unitPrice|as_crispy_field }}
+                            </div>
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                {{ refundform.totalRefund|as_crispy_field }}
+                            </div> 
+                            <div class="col-sm-4 mt-0" style="margin-bottom: -12px;">
+                                {{ refundform.due|as_crispy_field }}
+                            </div> 
+                            <div class="col-sm-4 mt-0" >
+                                {{ refundform.note|as_crispy_field }}
+                            </div> 
+                            <div class="col-sm-4 ms-auto mt-4">
+                                <button class="btn btn-success" type="button" onclick="RefundProduct();" id="refundbtn">Refund Product</button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mx-1 my-2 py-0 alert align-middle">
+                            <div class="text-center pb-2 border-bottom">
+                                <h4 class="m-0">Refund History</h3>
+                            </div>
+                            <table class="table table-bordered my-3" style="font-size: 14px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col" class="d-none">ProductId</th>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">UnitPrice</th>
+                                        <th scope="col">Total Refund</th>
+                                        <th scope="col">Due Refund</th>
+                                        <th scope="col">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="RefundTable">
+                                    {% for salerefund in salerefunds %}
+                                        <tr>
+                                            <th class="serial">{{forloop.counter}}</th>
+                                            <td class="id d-none">{{salerefund.id}}</td>
+                                            <td class="id_product d-none">{{salerefund.saleDetail.id_product}}</td>
+                                            <td class="user">{{salerefund.user}}</td>
+                                            <td class="product">{{salerefund.saleDetail.product}}</td>
+                                            <td class="quantity">{{salerefund.quantity}}</td>
+                                            <td class="unitPrice">{{salerefund.unitPrice}}</td>
+                                            <td class="totalRefund">{{salerefund.totalRefund}}</td>
+                                            <td class="dueRefund">{{salerefund.dueRefund}}</td>
+                                            <td class="date">{{salerefund.date}}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                    <tr>
+                                        <th class="total" colspan="5">Total</th>
+                                        <th class="totalRefund">{{totalRefund}}</td>
+                                        <th class="dueRefund">{{totalDueRefund}}</td>
+                                        <th class="date"></td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        
+                        <div class="text-center mx-1 mt-2 mb-0 py-0 alert align-middle">
+                            <div class="text-center pb-2 border-bottom">
+                                <h4 class="m-0">Due Collection History</h3>
+                            </div>
+                            <table class="table table-sm table-bordered my-3" style="font-size: 14px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">#</th>
+                                        <th scope="col" class="d-none">Id</th>
+                                        <th scope="col">User</th>
+                                        <th scope="col">Amount</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="RefundTable">
+                                    {% for duecollection in duecollections %}
+                                        <tr>
+                                            <th class="serial">{{forloop.counter}}</th>
+                                            <td class="id d-none">{{duecollection.id}}</td>
+                                            <td class="user">{{duecollection.user}}</td>
+                                            <td class="amount">{{duecollection.amount}}</td>
+                                            <td class="date">{{duecollection.date}}</td>
+                                            <td class="note">{{duecollection.note}}</td>
+                                        </tr>
+                                    {% endfor %}
+
+                                    <tr>
+                                        <th class="total" colspan="2">Total</th>
+                                        <th class="dueCollected">{{totalDueCollected}}</td>
+                                        <th class="date"></td>
+                                        <th class="note"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 text-center pt-4">
+                        {% comment %} <input class="btn btn-success" type="submit" id="savesale" value="Save Sale" /> {% endcomment %}
+                        <a class="btn btn-primary ms-2" href="{% url 'salelist' %}"><i class="bi bi-arrow-return-left"></i> Back To List</a>
+                    </div>
+                    {% comment %} </form> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+{% endblock %}
+
+{% block site_js %}
+<script>
+    $(document).ready(function(){
+        $('#id_totalPrice').trigger("change");
+        $('#id_payable').trigger("change");
+        $('#id_customer').trigger("change");
+    });
+
+    {% comment %} $("#id_company, #id_category").change(function(){
+        $("#id_product").empty();
+
+        $.ajax({
+            url : "/product/get/", // the endpoint
+            type : "GET", // http method
+            data: { 
+                'companyid': $('#id_company').val(),
+                'categoryid': $('#id_category').val() 
+            },
+            // handle a successful response
+            success : function(data) {
+                console.log(data); // log the returned json to the console
+
+                $.each(data.productlist, function (index, item) {
+                    $('#id_product').append($('<option>', { 
+                        value: item.id,
+                        text : item.title 
+                    }));
+                });
+                
+                if(data.productlist.length){
+                    $('#id_product').trigger("change");
+                }
+            },
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(err); // provide a bit more info about the error to the console
+                console.log(errmsg); // provide a bit more info about the error to the console
+            }
+        });
+    }); {% endcomment %}
+
+    $("#id_product").change(function(){
+        $.ajax({
+            url : "/product/getinfo/", // the endpoint
+            type : "GET", // http method
+            data: { 
+                'productid': $('#id_product').val(),
+            },
+            // handle a successful response
+            success : function(data) {
+                console.log(data); // log the returned json to the console
+
+                $("#id_quantity").parent().find("span").text(data.productinfo.unit);
+                $("#id_inStock").val(data.productinfo.inStock);
+                
+                $("#id_quantity").val(0).trigger("change");
+                
+                //$("#id_quantity").attr({
+                //    "max" : $("#id_inStock").val()  // values (or variables) here
+                //});
+                //$("#id_unitPrice").val(data.productinfo.unitPrice);
+                //$("#ProductDiscount").val(data.productinfo.discount);
+                //$("#id_unitPrice").trigger('change');
+            },
+            // handle a non-successful response
+            error : function(xhr,errmsg,err) {
+                console.log(err); // provide a bit more info about the error to the console
+                console.log(errmsg); // provide a bit more info about the error to the console
+            }
+        });
+    });
+
+    $("#id_customer").change(function(){
+        $("#customer").val($("#id_customer").val());
+        //console.log($("#customer").val());
+    });
+
+    $("#id_unitPrice, #id_quantity").change(function(){
+        var total = $("#id_unitPrice").val() * $("#id_quantity").val();
+
+
+        $("#totalRefund").val(total.toFixed(2));
+        $("#dueRefund").val(0);
+
+    });
+
+
+    $("#totalRefund, #dueRefund").change(function(){
+        var total = Number($("#totalRefund").val()) + Number($("#dueRefund").val());
+        total = total / $("#id_quantity").val();
+
+        $("#id_unitPrice").val(total.toFixed(2));
+
+    });
+    
+
+    $("#id_totalPrice, #id_discount").change(function(){
+        var id_totalPrice = Number($("#id_totalPrice").val());
+        var id_discount = Number($("#id_discount").val());
+        console.log(id_totalPrice);
+        console.log(id_discount);
+        console.log(id_totalPrice-id_discount);
+        $("#id_payable").val((id_totalPrice-id_discount).toFixed(2)).trigger("change");
+    });
+
+
+    $("#id_payable, #id_paid").change(function(){
+        var id_payable = Number($("#id_payable").val());
+        var id_paid = Number($("#id_paid").val());
+        if(id_payable < id_paid){
+            $("#id_due").val(0).trigger("change");
+            $("#id_change").val((id_paid-id_payable).toFixed(2)).trigger("change");
+        }
+        else {
+            $("#id_due").val((id_payable-id_paid).toFixed(2)).trigger("change");
+            $("#id_change").val(0).trigger("change");
+        }
+    });
+
+
+    function alreadyinqueue(){
+        var ret = false;
+        $("#ProductTable > tr").each(function(index, tr) { 
+            //console.log(index);
+            //console.log(tr);
+            if($(tr).find('.id_product').text() == $('#id_product').val()) {
+                alert("Product already added to the queue!!");
+                ret = true;
+                return false;
+            }
+        });
+
+        return ret;
+    }
+
+
+    function refund(row){
+        
+        $("#id_saleDetail").val($(row).parent().parent().find(".id").text()).trigger("change");
+        $("#id_product").val($(row).parent().parent().find(".id_product").text()).trigger("change");
+        $("#productid").val($(row).parent().parent().find(".id_product").text()).trigger("change");
+
+
+        //var totalProductPrice = Number($("#totalProductPrice").val());
+        //var id_totalPrice = Number($("#id_totalPrice").val());
+
+        /*
+        if($('#id_quantity').val()==0){
+            alert("Quantity can't be zero!!");
+            return;
+        }*/
+        var quantity = Number($(row).parent().parent().find(".quantity").text());
+        var refunded = Number($(row).parent().parent().find(".refunded").text());
+
+        $("#id_quantity").attr({
+            "max" :  quantity - refunded// values (or variables) here
+        });
+        $("#id_unitPrice").attr({
+            "max" :  $(row).parent().parent().find(".unitPrice").text()// values (or variables) here
+        });
+        $("#id_unitPrice").val($(row).parent().parent().find(".unitPrice").text());
+        $("#ProductDiscount").val($(row).parent().parent().find(".discount span").text());
+
+        $("#id_unitPrice").trigger('change');
+
+
+        //$("#id_totalRefundPrice").val((totalProductPrice+id_totalPrice).toFixed(2)).trigger("change");
+    }
+
+
+
+    function deleteRow(row){
+        var id_totalPrice = Number($("#id_totalPrice").val());
+        var totalProductPrice = Number($(row).parent().parent().find(".totalPrice").text());
+        $("#id_totalPrice").val((id_totalPrice-totalProductPrice).toFixed(2)).trigger("change");
+
+        $(row).parent().parent().remove();
+
+        $("#ProductTable > tr").each(function(index, tr) { 
+            //console.log(index);
+            //console.log(tr);
+            $(tr).find(".serial").text(index);
+        });
+    }
+
+
+    function RefundProduct() {   
+        $("#refundbtn").prop('disabled', true);
+        if($("#table_form").get(0).checkValidity()) {
+
+            if($("#id_customer").val() == ""){
+                alert("Customer field is required!!");
+                $("#refundbtn").prop('disabled', false);
+                return;
+            }
+            if($("#id_quantity").val() == 0){
+                alert("Product quantity can't be zero!!");
+                $("#refundbtn").prop('disabled', false);
+                return;
+            }
+            if($("#id_saleDetail").val() == 0){
+                alert("Select a product to refund!!");
+                $("#refundbtn").prop('disabled', false);
+                return;
+            }
+            
+            $("#table_form").submit();
+            //$("#refundbtn").prop('disabled', false);
+            
+            //console.log(Number($("#id_due").val()));
+            //console.log(Number($("#id_customer").val()));
+
+            /*if(Number($("#id_due").val()) > 0 && $("#id_customer").val() == 0){
+                alert("Customer field is required if the sale has due!!");
+            }*/
+
+            /*
+            var rows = [];
+            $("#ProductTable > tr").each(function(index, tr) {
+                //console.log(index);
+                //console.log(tr);
+                if(index > 0) {
+                    rows.push(JSON.stringify({
+                        'product': $(tr).find('.id_product').text(),
+                        'quantity': $(tr).find('.quantity').text(),
+                        'unitPrice': $(tr).find('.unitPrice').text(),
+                        'ProductDiscount': $(tr).find('.ProductDiscount span').text(),
+                        'totalPrice': $(tr).find('.totalPrice').text(),
+                    }))
+                }
+            });
+
+
+            var formdata = {
+                'customer': $('#id_customer').val(),
+                'saleStripeId': $('#id_saleStripeId').val(),
+                'note': $('#id_note').val(),
+                'totalPrice': $('#id_totalPrice').val(),
+                'discount': $('#id_discount').val(),
+                'paid': $('#id_paid').val(),
+                'saleProducts': rows,
+            }; 
+
+            $("#sale_form").submit()
+
+            console.log(formdata);
+
+            $.ajax({
+                url : "", // the endpoint
+                type : "POST", // http method
+                data: { 
+                    'customer': $('#id_customer').val(),
+                    'saleStripeId': $('#id_saleStripeId').val(),
+                    'note': $('#id_note').val(),
+                    'totalPrice': $('#id_totalPrice').val(),
+                    'discount': $('#id_discount').val(),
+                    'paid': $('#id_paid').val(),
+                    'due': $('#id_due').val(),
+                    'change': $('#id_change').val(),
+                    'saleProducts': rows,
+                    'csrfmiddlewaretoken': $("input[name='csrfmiddlewaretoken']").val() },
+                dataType: 'json',
+                // handle a successful response
+                success : function(json) {
+                    console.log(json); // log the returned json to the console
+                    alert("Sale completed!!");
+                },
+        
+                // handle a non-successful response
+                error : function(xhr,errmsg,err,res) {
+                    console.log(res); // provide a bit more info about the error to the console
+                }
+            });*/
+        } 
+        else{
+            $("#refundbtn").prop('disabled', false);
+            $("#table_form").get(0).reportValidity();
+        }
+
+    }
+
+</script>
+{% endblock %}
