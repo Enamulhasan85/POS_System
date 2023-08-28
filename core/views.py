@@ -193,7 +193,7 @@ def profile(request):
         
     addresses = Address.objects.filter(user=request.user)
     
-    return render(request, 'core\profile.html',{
+    return render(request, 'core/profile.html',{
         'userinfo': userinfo,
         'birthdate':birthdate,
         'user': request.user,
