@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'cg#p$g+j9tax!#a3cup@1$8obt2_+&
 
 ## For example, for a site URL is at 'web-production-3640.up.railway.app'
 ## (replace the string below with your own site URL):
-CSRF_TRUSTED_ORIGINS = ['https://web-production-45b2.up.railway.app']
+# CSRF_TRUSTED_ORIGINS = ['https://web-production-45b2.up.railway.app']
 
 # During development/for this tutorial you can instead set just the base URL
 # CSRF_TRUSTED_ORIGINS = ['https://*.railway.app']
@@ -39,7 +39,7 @@ DEBUG = True
 
 ## For example, for a site URL at 'web-production-3640.up.railway.app'
 ## (replace the string below with your own site URL):https:///
-ALLOWED_HOSTS = ['web-production-45b2.up.railway.app', '127.0.0.1']
+# ALLOWED_HOSTS = ['web-production-45b2.up.railway.app', '127.0.0.1']
 
 # During development, you can instead set just the base URL
 # (you might decide to change the site a few times).
@@ -100,32 +100,29 @@ WSGI_APPLICATION = 'POS_System.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.sqlite3',
+         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 # Update database configuration from $DATABASE_URL.
 
 # db_from_env = dj_database_url.config(conn_max_age=500)
 # DATABASES['default'].update(db_from_env)
 
+# import dj_database_url
 # DATABASES = {
-#     'default': dj_database_url.config(default='postgresql://postgres:QnumoB1ny07Xvhm3K58x@containers-us-west-37.railway.app:7387/railway')
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "railway",
+#         "USER": "postgres",
+#         "PASSWORD": "QnumoB1ny07Xvhm3K58x",
+#         "HOST": "containers-us-west-37.railway.app",
+#         "PORT": 7387,
+#     }
 # }
-import dj_database_url
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "railway",
-        "USER": "postgres",
-        "PASSWORD": "QnumoB1ny07Xvhm3K58x",
-        "HOST": "containers-us-west-37.railway.app",
-        "PORT": 7387,
-    }
-}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

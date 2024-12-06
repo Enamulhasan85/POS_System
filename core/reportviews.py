@@ -95,7 +95,7 @@ def productInStock(request):
             print(request.POST.get("company")) 
             productInStock = productInStock.filter(product__company=request.POST.get("company"))
         
-        print(productInStock)
+        # print(productInStock)
         
         productInStock = productInStock.values("product").annotate(
                                         productQuantity=Sum("quantity"), 
